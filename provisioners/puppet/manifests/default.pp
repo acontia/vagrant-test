@@ -1,18 +1,28 @@
-# Basic Puppet Apache manifest
+# Add a stage which precedes the main installation routine.
+  stage {"pre": before => Stage["main"]}
 
-class apache {
-  exec { 'apt-get update':
-    command => '/usr/bin/apt-get update'
-  }
+# Ensure apt updates before running the main installation routine.
+class {'apt': stage => 'pre'}
 
-  package { "apache2":
-    ensure => present,
-  }
+# Services used to run Drupal.
+  package { 'apache2': }
+  package { 'mysql-server': }
 
-  service { "apache2":
-    ensure => running,
-    require => Package["apache2"],
-  }
+# PHP and a bunch of PHP extensions.
+package { 'php5': }
+package { 'php5-cli': }
+package { 'php-apc': }
+package { 'php5-curl': }
+package { 'php5-gd': }
+package { 'php5-mcrypt': }
+package { 'php5-memcache': }
+package { 'php5-memcached': }
+package { 'php5-mysql': }
+package { 'php5-xsl': }
+
+package { 'php-pear': }
+
+phpundeprecate {'/etc/php5/conf.d/mcrypt.ini':
+  file => '/etc/php5/conf.d/mcrypt.ini',
+  require => Package['php5-mcrypt'],
 }
-
-include apache
