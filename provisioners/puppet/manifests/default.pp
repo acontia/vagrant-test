@@ -28,9 +28,14 @@ phpundeprecate {'/etc/php5/conf.d/mcrypt.ini':
 }
 
 # Configure Virtual Host                ]
-$site_domain = 'example.com'
-$site_docroot = "/vagrant/${site_domain}/docroot/"
-$site_logroot = "/vagrant/${site_domain}/logroot/"
+$site_domain = "example.local"
+$site_root = "/vagrant/site"
+$site_docroot = "${site_root}/docroot"
+$site_logroot = "${site_root}/logroot"
+
+file { $site_root:
+  ensure => directory
+}
 
 file { $site_docroot:
   ensure => directory
@@ -46,6 +51,7 @@ apache::vhost { $site_domain:
     port            => '80',
     docroot         => $site_docroot,
     logroot         => $site_logroot,
-    serveradmin     => 'admin@${site_domain}',
+    serveradmin     => "admin@${site_domain}",
+    serveraliases   => [$site_domain,],
 }
 
