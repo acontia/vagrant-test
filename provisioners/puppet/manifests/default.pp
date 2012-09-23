@@ -1,3 +1,10 @@
+# Main settings. (Some of them should be loaded from a external file)
+$candw_site_domain = "example.local"
+
+$candw_database_user = "root";
+$candw_database_password = "rootpass";
+
+
 # Add a stage which precedes the main installation routine.
 stage {"pre": before => Stage["main"]}
 
@@ -6,7 +13,10 @@ class {'apt': stage => 'pre'}
 
 # Services used to run Drupal.
 class {'apache':  }
-package { 'mysql-server': }
+
+class { 'mysql::server': 
+  config_hash => { 'root_password' => $candw_database_password }
+}
 
 # PHP and a bunch of PHP extensions.
 package { 'php5': }
@@ -27,8 +37,7 @@ phpundeprecate {'/etc/php5/conf.d/mcrypt.ini':
   require => Package['php5-mcrypt'],
 }
 
-# Configure Virtual Host                ]
-$site_domain = "example.local"
+# Configure Apache Virtual Hosts
 $site_root = "/vagrant/site"
 $site_docroot = "${site_root}/docroot"
 $site_logroot = "${site_root}/logroot"
@@ -45,13 +54,23 @@ file { $site_logroot:
   ensure => directory
 }
 
-apache::vhost { $site_domain:
+apache::vhost { $candw_site_domain:
     priority        => '10',
     vhost_name      => '*',
     port            => '80',
     docroot         => $site_docroot,
     logroot         => $site_logroot,
-    serveradmin     => "admin@${site_domain}",
-    serveraliases   => ["www.${site_domain}",],
+    serveradmin     => "admin@${candw_site_domain}",
+    serveraliases   => ["www.${candw_site_domain}",],
 }
+
+
+# Creates database
+mysql::db { 'mydb':
+  user     => $candw_database_user,
+  password => $candw_database_password,
+  host     => 'localhost',
+  grant    => ['all'],
+}
+
 
