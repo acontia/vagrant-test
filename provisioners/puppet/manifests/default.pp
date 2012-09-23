@@ -1,8 +1,13 @@
 # Main settings. (Some of them should be loaded from a external file)
 $candw_site_domain = "example.local"
 
-$candw_database_user = "root";
-$candw_database_password = "rootpass";
+$candw_database_user = "root"
+$candw_database_password = "rootpass"
+$candw_database_name = $candw_site_domain
+
+$candw_vcsrepo_provider = "git"
+$candw_vcsrepo_source = "git@github.com:acontia/context_easy.git"
+$candw_vcsrepo_branch = "7.x-1.x-dev"
 
 
 # Add a stage which precedes the main installation routine.
@@ -13,7 +18,6 @@ class {'apt': stage => 'pre'}
 
 # Services used to run Drupal.
 class {'apache':  }
-
 class { 'mysql::server': 
   config_hash => { 'root_password' => $candw_database_password }
 }
@@ -65,12 +69,23 @@ apache::vhost { $candw_site_domain:
 }
 
 
+# Import code from repository
+vcsrepo { "vcsrepo_${candw_site_domain}":
+  ensure   => latest,
+  provider => git,
+  source   => $candw_vcsrepo_source,
+  path     => $site_docroot,
+}
+
+
 # Creates database
-mysql::db { 'mydb':
+mysql::db { $candw_database_name:
   user     => $candw_database_user,
   password => $candw_database_password,
   host     => 'localhost',
   grant    => ['all'],
 }
+
+# Import database
 
 
