@@ -47,11 +47,11 @@ file { $site_logroot:
 
 apache::vhost { $site_domain:
     priority        => '10',
-    vhost_name      => '192.0.2.1',
+    vhost_name      => '*',
     port            => '80',
     docroot         => $site_docroot,
     logroot         => $site_logroot,
     serveradmin     => "admin@${site_domain}",
-    serveraliases   => [$site_domain,],
+    serveraliases   => ["www.${site_domain}",],
 }
 
